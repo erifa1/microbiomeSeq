@@ -36,7 +36,8 @@
 #'
 kruskal_abundance <- function(physeq, grouping_column,pvalue.threshold=0.05)
 {
-  abund_table <- otu_table(physeq)
+  abund_table <- as.data.frame(otu_table(physeq)) 
+  names(abund_table) = gsub("\\[|\\]|-", "", names(abund_table))  
   meta_table <-data.frame(sample_data(physeq))
   meta_table$Groups <- meta_table[,grouping_column]
 
@@ -62,7 +63,7 @@ kruskal_abundance <- function(physeq, grouping_column,pvalue.threshold=0.05)
   #==random forest classifier ==#
   subset.data<-data.frame(data[,as.character(kruskal.wallis.table[rownames(kruskal.wallis.table),"id"])])
   kruskal.wallis.table$id <- colnames(subset.data) #enforce that ids and colnames of subset data remain the same for easy indexing later on
-  subset.data <- subset.data[,sig_res]
+  subset.data <- subset.data[,as.character(sig_res)]  
   rf_res <- randomforest_res(subset.data, meta_table$Groups)
   df_accuracy <- rf_res$importance
 
@@ -75,7 +76,7 @@ kruskal_abundance <- function(physeq, grouping_column,pvalue.threshold=0.05)
     df <- na.omit(df)
     }
 
-  out <- list("SignfeaturesTable"=kruskal.wallis.table, "plotdata"=df, "importance"=df_accuracy)
+  out <- list("SignfeaturesTable"=kruskal.wallis.table, "plotdata"=df, "importance"=df_accuracy, "data"=data) 
 
   return(out)
 
